@@ -1,0 +1,11 @@
+{
+  "id": "ponder",
+  "name": "Ponder",
+  "author": "StriderDev",
+  "version": "1.0.0",
+  "description": "Hold Z in the build menu to explore animated guides for supported parts.",
+  "needs": ["stellarstriderlib"],
+  "ai": "ai-assisted",
+  "development": "active",
+  "tags": ["guides", "utility"]
+}

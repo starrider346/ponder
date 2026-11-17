@@ -1,0 +1,11 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+Local.props
+Releases/
+__pycache__/
+/.idea/
+/.awb/
+.DS_Store

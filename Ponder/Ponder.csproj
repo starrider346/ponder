@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Version>1.0.0</Version>
+    <PackageId>StellarDrivePonder</PackageId>
+    <Authors>StriderDev</Authors>
+    <Description>Animated, client-local part guides for StellarDrive.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <Import Project="../Local.props" Condition="Exists('../Local.props')"/>
+  <PropertyGroup>
+    <GamePath Condition="'$(GamePath)' == '' and $([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/Steam/steamapps/common/StellarDrive Demo</GamePath>
+    <ManagedPath Condition="'$(ManagedPath)' == ''">$(GamePath)/StellarDrive_Data/Managed</ManagedPath>
+    <LoaderPath Condition="'$(LoaderPath)' == ''">$(GamePath)/MelonLoader/net35</LoaderPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="StellarStriderLib" Version="*" ExcludeAssets="runtime" />
+    <Reference Include="$(LoaderPath)/MelonLoader.dll;$(LoaderPath)/0Harmony.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(ManagedPath)/Core.dll;$(ManagedPath)/Ships.dll;$(ManagedPath)/Ships.Interface.dll;$(ManagedPath)/Rendering.dll;$(ManagedPath)/UI.dll;$(ManagedPath)/UI.Interface.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(ManagedPath)/UnityEngine.CoreModule.dll;$(ManagedPath)/UnityEngine.UIModule.dll;$(ManagedPath)/UnityEngine.UI.dll;$(ManagedPath)/Unity.TextMeshPro.dll;$(ManagedPath)/Unity.InputSystem.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(ManagedPath)/UnityEngine.PhysicsModule.dll;$(ManagedPath)/UnityEngine.ParticleSystemModule.dll;$(ManagedPath)/UnityEngine.TextRenderingModule.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="ValidateGameReferences" BeforeTargets="ResolveAssemblyReferences" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="!Exists('$(ManagedPath)/Ships.dll')" Text="Set GamePath in Local.props to the StellarDrive installation (see Local.props.example)."/>
+    <Error Condition="!Exists('$(LoaderPath)/MelonLoader.dll') or !Exists('$(LoaderPath)/0Harmony.dll')" Text="MelonLoader/Harmony are missing; check LoaderPath in Local.props."/>
+  </Target>
+  <Target Name="PublishReleaseFiles" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(DesignTimeBuild)' != 'true'">
+    <MakeDir Directories="$(MSBuildProjectDirectory)/../Releases"/>
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)Ponder.xml" DestinationFolder="$(MSBuildProjectDirectory)/../Releases"/>
+  </Target>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' and !$([System.String]::IsNullOrWhiteSpace('$(SD_MODS_DIR)'))">
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+  <Target Name="DeployModToStellarDrive" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true' and !$([System.String]::IsNullOrWhiteSpace('$(SD_MODS_DIR)'))">
+    <Error Condition="!$([System.IO.Path]::IsPathFullyQualified('$(SD_MODS_DIR)'))" Text="SD_MODS_DIR must be an absolute host filesystem path to the game's Mods directory. Received: $(SD_MODS_DIR)"/>
+    <Message Importance="high" Text="Deploying $(TargetFileName) to $(SD_MODS_DIR)"/>
+    <MakeDir Directories="$(SD_MODS_DIR)"/>
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SD_MODS_DIR)" Retries="0"/>
+    <Message Importance="high" Text="Deployed $(TargetFileName) to $(SD_MODS_DIR)"/>
+  </Target>
+</Project>
