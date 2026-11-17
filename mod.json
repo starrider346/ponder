@@ -7,5 +7,5 @@
   "needs": ["stellarstriderlib"],
   "ai": "ai-assisted",
   "development": "active",
-  "tags": ["guides", "utility"]
+  "tags": ["guides", "utility", "stellarstriderlib"]
 }
